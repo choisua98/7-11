@@ -1,9 +1,12 @@
 import React from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { sortByPrice, reset } from "../redux/products";
 
 export default function Products() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  console.log(searchParams.get("sort"));
+  const dispatch = useDispatch();
+  const products = useSelector((state) => state.products);
+
   return (
     <>
       {/* Header */}
@@ -16,13 +19,17 @@ export default function Products() {
         <h2>🔥 여름 추천템 🔥</h2>
         <button
           onClick={() => {
-            setSearchParams({
-              sort: "price",
-            });
+            dispatch(sortByPrice());
           }}
-          // useSearchParams로 url을 변경한다.
         >
-          가격순으로 정렬
+          가격순정렬
+        </button>
+        <button
+          onClick={() => {
+            dispatch(reset());
+          }}
+        >
+          리셋
         </button>
         <div
           style={{
@@ -31,46 +38,24 @@ export default function Products() {
             gap: "24px",
           }}
         >
+          {products.map((product) => {
+            return (
+              <Link to={`/products/${product.id}`}>
+                <div
+                  key={product.id}
+                  style={{
+                    width: "200px",
+                    height: "240px",
+                    backgroundColor: "#068FFF",
+                  }}
+                >
+                  <div>{product.name}</div>
+                  <div>가격: {product.price}</div>
+                </div>
+              </Link>
+            );
+          })}
           {/* 상세페이지로 넘기기 */}
-          <Link to="/products/1">
-            <div
-              style={{
-                width: "200px",
-                height: "240px",
-                backgroundColor: "#068FFF",
-              }}
-            >
-              멋진 바지
-              <br />
-              20000
-            </div>
-          </Link>
-          <Link to="/products/2">
-            <div
-              style={{
-                width: "200px",
-                height: "240px",
-                backgroundColor: "#068FFF",
-              }}
-            >
-              멋진 셔츠
-              <br />
-              10000
-            </div>
-          </Link>
-          <Link to="/products/3">
-            <div
-              style={{
-                width: "200px",
-                height: "240px",
-                backgroundColor: "#068FFF",
-              }}
-            >
-              멋진 신발
-              <br />
-              30000
-            </div>
-          </Link>
         </div>
       </div>
     </>

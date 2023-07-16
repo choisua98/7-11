@@ -1,8 +1,10 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 //임포트 해오기
 
 export default function Main() {
+  const products = useSelector((state) => state.products);
   const navigate = useNavigate();
   // useNavigate 사용
   return (
@@ -46,39 +48,20 @@ export default function Main() {
               gap: "24px",
             }}
           >
-            <div
-              style={{
-                width: "200px",
-                height: "240px",
-                backgroundColor: "#068FFF",
-              }}
-            >
-              멋진 바지
-              <br />
-              20000
-            </div>
-            <div
-              style={{
-                width: "200px",
-                height: "240px",
-                backgroundColor: "#068FFF",
-              }}
-            >
-              멋진 셔츠
-              <br />
-              10000
-            </div>
-            <div
-              style={{
-                width: "200px",
-                height: "240px",
-                backgroundColor: "#068FFF",
-              }}
-            >
-              멋진 신발
-              <br />
-              30000
-            </div>
+            {products.map((product) => {
+              return (
+                <div
+                  key={product.id}
+                  style={{
+                    width: "200px",
+                    height: "240px",
+                    backgroundColor: "#068FFF",
+                  }}
+                >
+                  {product.name}
+                </div>
+              );
+            })}
           </div>
         </section>
         {/* 추가적인 데이터 */}

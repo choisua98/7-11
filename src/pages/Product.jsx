@@ -1,42 +1,36 @@
-import React from "react";
+import React, { Fragment, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useState } from "react";
-//useState 임포트
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart, deleteFromCart } from "../redux/cart";
+// import { addToCart } from "../index";
 
 export default function Product() {
-  //url의 id가 달라지면 다른 상품을 보이게 하기.
+  const products = useSelector((state) => state.products);
+  const cart = useSelector((state) => state.cart);
   const { id } = useParams();
-  const [selectedOption, setselectedOption] = useState("");
-  //옵션 선택이 변함에 따라 '구매옵션'에 보이는 글자가 달라져야 해서 스테이트 설정
-  const [itemList, setitemList] = useState([
-    {
-      name: "멋진 바지",
-      price: "20000",
-      option1: "28",
-      option2: "30",
-      option3: "32",
-      likes: "100",
-    },
-    {
-      name: "멋진 셔츠",
-      price: "10000",
-      option1: "small",
-      option2: "medium",
-      option3: "large",
-      likes: "200",
-    },
-    {
-      name: "멋진 신발",
-      price: "30000",
-      option1: "230",
-      option2: "240",
-      option3: "250",
-      option4: "260",
-      option5: "270",
-      likes: "300",
-    },
-  ]);
-  console.log(id);
+  const product = products.find((product) => product.id === id);
+  const [selectOption, setSelectOption] = useState("");
+  const dispatch = useDispatch();
+  const [itemNumber, setItemNumber] = useState(1);
+  //상품 개수 초기값 설정
+
+  //+-버튼 클릭 핸들러 / 1애서 -버튼 클릭시 alert창 띄우기
+  const onPlusButtonClickHandler = () => {
+    setItemNumber(itemNumber + 1);
+  };
+  const onMinusButtonClickHandler = () => {
+    if (itemNumber - 1 < 1) {
+      alert("상품을 1개 이상 선택해 주세요 !");
+    } else {
+      setItemNumber(itemNumber - 1);
+    }
+  };
+
+  // //장바구니애서 삭제 버튼 클릭 핸들러
+  // const onDeleteButtonClickHandler = (product) => {
+  //   dispatch(deleteFromCart(product));
+  // };
+
   return (
     <>
       <div>
@@ -54,35 +48,90 @@ export default function Product() {
               width: "200px",
               height: "240px",
               backgroundColor: "#068FFF",
+              color: "white",
             }}
           >
-            {itemList[id - 1].name}
-            {/* 상품 id를 가져와서 같은 url 이지만 다른 상품을 보여줄 수 있게 됨. */}
-            {/* ->상품 이름으로 바꿈 */}
+            <div>{product.name}</div>
           </div>
           <div>
-            <h3>가격: {itemList[id - 1].price}</h3>
-            <h3>좋아요: {itemList[id - 1].likes}</h3>
+            <h3>가격: {product.price} 원</h3>
+            <h3>좋아요: {product.likes} 개</h3>
             <h3>구매옵션</h3>
             <select
               style={{
                 width: "100px",
               }}
               onChange={(e) => {
-                setselectedOption(e.target.value);
+                setSelectOption(e.target.value);
               }}
-              //선택된 셀렉트값을 setselectedOption에 넣어줌
             >
-              <option>{itemList[id - 1].option1}</option>
-              <option>{itemList[id - 1].option2}</option>
-              <option>{itemList[id - 1].option3}</option>
-              <option>{itemList[id - 1].option4}</option>
-              <option>{itemList[id - 1].option5}</option>
-              {/* id-1이 배열이랑 같아서 이렇게 씀 */}
+              <option value="">필수 옵션을 선택하세요.</option>
+              {product.options.map((option) => {
+                return (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                );
+              })}
             </select>
-            <div>구매옵션 : {selectedOption}</div>
-            {/* setselectedOption로 선택된 옵션 보여줌 */}
+            <div>구매 옵션: {selectOption}</div>
+
+            {/* 갯수선택 */}
+            <div>
+              개수:&nbsp;
+              <input
+                type="number"
+                value={itemNumber}
+                onChange={(e) => {
+                  setItemNumber(e.target.value);
+                }}
+              />
+              <button onClick={onPlusButtonClickHandler}>+</button>
+              <button onClick={onMinusButtonClickHandler}>-</button>
+            </div>
+            <div>총 금액: {product.price * itemNumber}원</div>
+            <button
+              onClick={() => {
+                if (selectOption === "") {
+                  alert("필수옵션을 선택해주세요 !");
+                  // 필수옵션 선택 알림띄우기.
+                } else {
+                  dispatch(addToCart(product));
+                }
+              }}
+            >
+              장바구니 추가하기
+            </button>
           </div>
+        </div>
+        <h1>장바구니</h1>
+        <div>
+          {cart.map((product) => {
+            return (
+              <div
+                key={product.id}
+                style={{
+                  border: "1px solid black",
+                }}
+              >
+                <h3>{product.name}</h3>
+                <h3>가격: {product.price} 원</h3>
+                <h3>좋아요: {product.likes} 개</h3>
+                <h3>구매 옵션: {selectOption} size</h3>
+                <h3>
+                  갯수: <button onClick={onMinusButtonClickHandler}>-</button>
+                  &nbsp;{itemNumber}&nbsp;
+                  <button onClick={onPlusButtonClickHandler}>+</button>
+                  {/* 장바구니 안에서 상품 갯수 조정하기*/}
+                </h3>
+                <h3>총비용: {product.price * itemNumber} 원</h3>
+                <button onClick={() => dispatch(deleteFromCart(product))}>
+                  {/* 삭제버튼 구현에서 막혀버렸습니다...ㅜ */}
+                  장바구니에서 삭제
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
     </>
